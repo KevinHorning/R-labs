@@ -1,0 +1,158 @@
+---
+title: "Lab-04 Dynamic Graphics"
+output: flexdashboard::flex_dashboard
+runtime: shiny
+---
+
+```{r global, include=FALSE}
+
+library( dplyr )
+library( pander )
+library( Lahman )
+
+data( Teams )
+
+ave.so <- Teams$SO / Teams$G  # average strike-outs per game each season 
+year <- Teams$yearID
+
+# min and max values needed to create your plot window 
+ave.so.min <- min( ave.so, na.rm=T )
+ave.so.max <- max( ave.so, na.rm=T )
+
+# the league average for each season
+league.ave <- tapply( X=ave.so, INDEX=as.factor(year), FUN="mean", na.rm=T )
+league.year <- as.numeric( names( league.ave ) )
+
+Teams$ave.so -> ave.so
+```
+
+
+
+Column {.sidebar}
+-----------------------------------------------------------------------
+
+Select a team to highlight on the graph.
+
+```{r}
+selectInput( inputId="myTeam",
+             label="Select a Team:",
+             choices=tail(unique(Teams$name)),
+             selected=Teams[1]   
+           )
+```
+
+
+
+**Author:** Jasmine Munevar
+
+**Date:**  `r format(Sys.time(), '%B %d, %Y')`
+
+```{r}
+#head(Teams$)
+```
+
+
+Column
+-----------------------------------------------------------------------
+
+### Strikeouts on the Rise
+
+
+```{r}
+renderPlot({
+  
+library( Lahman )
+data( Teams )
+ave.so <- Teams$SO / Teams$G  # average strike-outs per game each season 
+year <- Teams$yearID
+summary( ave.so ) %>% pander()
+
+ave.so.min <- min( ave.so, na.rm=T )
+ave.so.max <- max( ave.so, na.rm=T )
+
+plot.new()
+plot.window( xlim=c( 1900, 2025 ), ylim=c( ave.so.min, ave.so.max ) )
+points( year, ave.so )
+
+plot.new()
+plot.window( xlim=c( 1900, 2025 ), ylim=c( ave.so.min, ave.so.max ) )
+points( year, ave.so, col=gray( level=0.2, alpha=0.1 ), pch=17, cex=3 )
+
+plot.new()
+plot.window( xlim=c( 1900, 2025 ), ylim=c( ave.so.min, ave.so.max ) )
+points( year, ave.so, col=gray( level=0.2, alpha=0.1 ), pch=17, cex=3 )
+
+axis( side=1 )
+
+plot.new()
+plot.window( xlim=c( 1900, 2025 ), ylim=c( ave.so.min, ave.so.max ) )
+points( year, ave.so, col=gray( level=0.2, alpha=0.1 ), pch=17, cex=3 )
+axis(side=1)
+
+abline( h=c(3,4,5,6,7,8), lty=2, col="gray" )
+
+plot.new()
+plot.window( xlim=c( 1900, 2025 ), ylim=c( ave.so.min, ave.so.max ) )
+points( year, ave.so, col=gray( level=0.2, alpha=0.1 ), pch=17, cex=3 )
+axis( side=1 )
+title( main="Strikeouts on the Rise" )
+
+league.ave <- tapply( X=ave.so, INDEX=as.factor(year), FUN="mean", na.rm=T )
+league.year <- as.numeric( names( league.ave ) )
+
+plot.new()
+plot.window( xlim=c( 1900, 2025 ), ylim=c( ave.so.min, ave.so.max ) )
+points( year, ave.so, col=gray( level=0.2, alpha=0.1 ), pch=17, cex=3 )
+points( league.year, league.ave, type="b", pch=8, col="red" )
+axis( side=1 )
+title( main="Strikeouts on the Rise" )
+
+#Plot Area
+plot.new()
+plot.window( xlim=c( 1900, 2025 ), ylim=c( ave.so.min, ave.so.max ) )
+points( year, ave.so, col="lightgray", pch=20, cex=1 )
+points( league.year, league.ave, type="o", pch=19, col="blue", cex=0.5, lwd=3 )
+points(1924, 2.7, col="black", pch=21, cex=2)
+points(2012, 7.5, col="black", pch=21, cex=2)
+
+#Axis
+axis(side=1, seq(1900, 2020, 10))
+axis( side=4,seq(0,9,1),las=2, tick = F, col.axis="gray")
+abline( h=c(1,2,3,4,5,6,7,8,9), lty=2, col="gray" )
+
+
+#Title Area 
+title(main = "Strikeouts on the Rise", cex.main=2, adj = 0)
+title(main = "There were more strikeouts in 2012 than at any other time in major league history.", cex.main=0.8, line=-1, col.main="gray30", adj=0 )
+title(main = "Strikeouts per game per team (by batters)", cex.main=0.7, line=-3,  adj=0)
+
+#Legend
+legend(1895,8.9, legend=c("League average", input$myTeam),
+       col=c("blue","orange"), pch = c(20,20), 
+       lty=1:1,cex=.8, box.lty=0, text.col = ("blue"))
+
+#Text 
+text( 1917, 3.48, labels=(text="U.S. enters\nWorld War I."),cex=.75, offset=8, pos=1,col="gray")
+segments(1917, 3.40, 1917, 1, col = "gray", lwd = 1, lty = 1)
+text( 1924, 2.7, labels=(text="2.7"),cex=1.5, offset=.75, pos=1,col="blue", font=2)
+text( 1924, 2.7, labels=(text="League average\n1924"), offset=2, pos=1,col="black", font=2)
+text( 1946, 3.88, labels=(text="Players return\nfrom World War II."),cex=.75, offset=7, pos=1,col="gray")
+segments(1946, 3.48, 1946, 1.8, col = "gray", lwd = 1, lty = 1)
+text( 1963, 5.8, labels=(text="Strike zone enlarged\nfrom 1963-68."),cex=.75, offset=10, pos=1,col="gray")
+segments(1963, 5.40, 1963, 2.8, col = "gray", lwd = 1, lty = 1)
+text( 1969, 5.83, labels=(text="Pitching had become so dominant\nin the 1960s that the mound\nwas lowered in 1969."),cex=.75, offset=7.5, pos=3,col="gray")
+segments(1969, 6.23, 1969, 8.0, col = "gray", lwd = 1, lty = 1)
+text( 1973, 5.2, labels=(text="Designated hitter\nrule took effect."),cex=.75, offset=11, pos=1,col="gray")
+segments(1973, 4.8, 1973, 1.8, col = "gray", lwd = 1, lty = 1)
+text( 2008, 6.8, labels=(text="Mitchell Report\non steroids."),cex=.75, offset=10, pos=1,col="gray")
+segments(2008, 6.4, 2008, 3.8, col = "gray", lwd = 1, lty = 1)
+text( 2012, 7.5, labels=(text="7.5"),cex=1.5, offset=1, pos=3,col="blue", font=2)
+text( 2012, 7.5, labels=(text="2012\nLeague average"), offset=2.5, pos=3,col="black",font=2)
+
+
+Teams$ave.so <- Teams$SO / Teams$G  # to make subsetable, add back to data frame
+one.team <- filter( Teams, name == input$myTeam)
+points( x=one.team$yearID, y=one.team$ave.so, type="b", pch=19, col="darkorange4" )
+})
+```
+
